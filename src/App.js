@@ -26,11 +26,14 @@ function App() {
     }
   };
 
+  const pwaURL = window.location.href; // Ensure your PWA URL is the correct one for production deployment
+
   return (
     <div className="App">
-      <h1>Welcome to My PWA</h1>
-      <p>Scan the QR code below to install the app:</p>
-      <QRCodeCanvas value={window.location.href} /> {/* Use QRCodeCanvas */}
+      <h1>Install My PWA</h1>
+      <p>Scan the QR code below to open the app in your browser:</p>
+      <QRCodeCanvas value={pwaURL} />{" "}
+      {/* Use QRCodeCanvas to generate a QR code */}
       {deferredPrompt && (
         <button onClick={handleInstallClick}>Install App</button>
       )}
