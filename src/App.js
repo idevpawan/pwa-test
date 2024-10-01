@@ -1,42 +1,43 @@
-import React, { useEffect, useState } from "react";
-import { QRCodeCanvas } from "qrcode.react"; // Import QRCodeCanvas
+import React, { useEffect, useRef } from "react";
+import { QRCodeCanvas } from "qrcode.react";
+import logo from "./logo.svg";
+import { PWAInstallElement } from "@khmyznikov/pwa-install";
+
+// Define the custom element only once
+if (!customElements.get("pwa-install")) {
+  customElements.define("pwa-install", PWAInstallElement);
+}
 
 function App() {
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const pwaInstallRef = useRef(null);
+  const pwaURL = window.location.href;
 
   useEffect(() => {
-    // Capture the event for prompting PWA installation
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    });
+    const showInstallPrompt = () => {
+      if (pwaInstallRef.current) {
+        pwaInstallRef.current.showDialog();
+      }
+    };
+
+    // Show the install prompt after a short delay
+    const timer = setTimeout(showInstallPrompt, 1000);
+
+    // Cleanup function to clear the timeout
+    return () => clearTimeout(timer);
   }, []);
-
-  const handleInstallClick = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === "accepted") {
-          console.log("PWA installed");
-        } else {
-          console.log("PWA installation dismissed");
-        }
-        setDeferredPrompt(null);
-      });
-    }
-  };
-
-  const pwaURL = window.location.href; // Ensure your PWA URL is the correct one for production deployment
 
   return (
     <div className="App">
-      <h1>Install My PWA</h1>
+      <h1>Welcome to My PWA</h1>
       <p>Scan the QR code below to open the app in your browser:</p>
-      <QRCodeCanvas value={pwaURL} />{" "}
-      {/* Use QRCodeCanvas to generate a QR code */}
-      {deferredPrompt && (
-        <button onClick={handleInstallClick}>Install App</button>
-      )}
+      <QRCodeCanvas value={pwaURL} />
+      <pwa-install
+        ref={pwaInstallRef}
+        name="MyPWA"
+        icon={logo}
+        description="Install our awesome PWA for a better experience!"
+        manifestUrl="manifest.json"
+      ></pwa-install>
     </div>
   );
 }
